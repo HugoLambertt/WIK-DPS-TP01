@@ -40,14 +40,13 @@ let port = env::var("PING_LISTEN_PORT").unwrap_or_else(|_| "8080".to_string());
 - Sécurisation des données pour le multi-threading avec un pointeur partagé `Arc` et un verrou `Mutex`.
 - Ajout de la route `GET /stats` qui renvoie le compteur de pings, l'uptime et l'ID d'instance.
 
-## Phase de Test Réels (PowerShell)
 
-### Test 1 : Lancement initial et vérification des stats (0 requête)
-```powershell
+Lancement initial et vérification des stats (0 requête)
+
 PS C:\www\WIK-DPS-TP01> Invoke-RestMethod -Uri "http://localhost:8080/stats"
 
 instance_id             total_requests uptime_seconds
------------             -------------- --------------
+
 instance-locale-default              0             52
 
 
@@ -58,7 +57,7 @@ User-Agent                                                                      
 Mozilla/5.0 (Windows NT; Windows NT 10.0; fr-FR) WindowsPowerShell/5.1.26100.8457 localhost:8080
 
 
-Test 3 : Vérification de l'incrémentation du compteur
+Vérification de l'incrémentation du compteur
 PowerShell
 PS C:\www\WIK-DPS-TP01> Invoke-RestMethod -Uri "http://localhost:8080/stats"
 
@@ -67,7 +66,7 @@ instance_id             total_requests uptime_seconds
 instance-locale-default              1             86
 
 
-Test 4 : Simulation d'une instance répliquée avec un autre nom
+Simulation d'une instance répliquée avec un autre nom
 PowerShell
 PS C:\www\WIK-DPS-TP01\srv-web> $env:INSTANCE_ID="srv-web-cyber-prod-01"
 PS C:\www\WIK-DPS-TP01\srv-web> cargo run
