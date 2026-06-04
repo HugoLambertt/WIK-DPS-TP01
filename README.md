@@ -109,18 +109,11 @@ docker build -t api-rust-multi .
 docker run -d -p 8080:8080 --name mon-api api-rust-multi
 14/ Tests de l'API depuis le conteneur Docker en cours d'exécution :
 
-Vérification de la route ping
+http://localhost:8080/ping 
 
-PS C:\www\WIK-DPS-TP01\WIK-DPS-TP02> Invoke-RestMethod -Uri "http://localhost:8080/ping"
+{"Connection":"keep-alive","Sec-Fetch-Mode":"navigate","Accept-Encoding":"gzip, deflate, br, zstd","sec-ch-ua-mobile":"?0","Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7","Upgrade-Insecure-Requests":"1","Sec-Fetch-Site":"none","sec-ch-ua-platform":"\"Windows\"","sec-ch-ua":"\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"","Sec-Fetch-Dest":"document","Sec-Purpose":"prefetch;prerender","Accept-Language":"fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7","User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36","Host":"localhost:8080","Sec-Fetch-User":"?1"}
 
-User-Agent                                                                                                Host
 
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari  localhost:8080
+http://localhost:8080/stats 
 
-Vérification des statistiques (le compteur s'incrémente bien via l'image Docker)
-
-PS C:\www\WIK-DPS-TP01\WIK-DPS-TP02> Invoke-RestMethod -Uri "http://localhost:8080/stats"
-
-instance_id             total_requests uptime_seconds
-
-instance-locale-default              4            157
+{"instance_id":"instance-locale-default","total_requests":4,"uptime_seconds":157}
