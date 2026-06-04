@@ -117,3 +117,49 @@ http://localhost:8080/ping
 http://localhost:8080/stats 
 
 {"instance_id":"instance-locale-default","total_requests":4,"uptime_seconds":157}
+
+WIK-DPS-TP03
+1/ Création du fichier docker-compose.yml avec pour seul service notre api basée sur le Dockerfile multi-stage du TP02.
+
+Augmentation du nombre d'instances à 4 avec la directive replicas: 4.
+
+L'API n'expose aucun port sur la machine hôte pour des raisons de sécurité.
+
+2/ Ajout et configuration d'un Reverse-Proxy (Nginx) :
+
+Ajout du service reverse-proxy basé sur l'image nginx:alpine dans le docker-compose.
+
+Ce conteneur est le seul exposé sur l'hôte, sur le port 8080 (ports: "8080:80").
+
+Création du fichier de configuration nginx.conf pour loadbalancer (répartir la charge) les requêtes HTTP entrantes vers notre cluster api de 4 conteneurs.
+
+3/ Modification du code source de l'API (Rust) :
+
+Ajout d'une ligne dans le traitement de la route /ping pour récupérer et afficher le HOSTNAME (l'ID du conteneur) dans la console à chaque requête reçue.
+
+4/ Déploiement et tests de l'équilibrage de charge :
+
+Démarrage de l'infrastructure :
+
+docker compose up --build -d
+Envoi d'une requête sur le proxy (qui redirige vers un des conteneurs Rust) :
+
+PS C:\www\WIK-DPS-TP01\WIK-DPS-TP03> Invoke-RestMethod -Uri "http://localhost:8080/ping"
+
+X-Real-IP  Host      User-Agent                                       
+---------  ----      ----------                                       
+172.20.0.1 localhost Mozilla/5.0 (Windows NT; Windows NT 10.0; fr-F...
+Observation des logs confirmant la bonne répartition de charge (Round-Robin) sur les 4 réplicas :
+
+
+PS C:\www\WIK-DPS-TP01\WIK-DPS-TP03> docker compose logs api
+time="2026-06-04T14:23:06+02:00" level=warning msg="C:\\www\\WIK-DPS-TP01\\WIK-DPS-TP03\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+api-3  | Serveur en écoute sur http://0.0.0.0:8080
+api-3  | Requête /ping traitée par l'instance : f4f9b96382b2
+api-3  | Requête /ping traitée par l'instance : f4f9b96382b2
+api-4  | Serveur en écoute sur http://0.0.0.0:8080
+api-4  | Requête /ping traitée par l'instance : 0242462076cb
+api-1  | Serveur en écoute sur http://0.0.0.0:8080
+api-1  | Requête /ping traitée par l'instance : ac5a884e56f6
+api-2  | Serveur en écoute sur http://0.0.0.0:8080
+api-2  | Requête /ping traitée par l'instance : ef21b2580643
