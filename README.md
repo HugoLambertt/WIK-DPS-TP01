@@ -81,3 +81,46 @@ PS C:\www\WIK-DPS-TP01> Invoke-RestMethod -Uri "http://localhost:8080/stats"
 instance_id           total_requests uptime_seconds
 -----------           -------------- --------------
 srv-web-cyber-prod-01              0             21
+
+
+WIK-DPS-TP02
+
+
+10/ Création d'une première image Docker (Dockerfile.single) avec un seul stage.
+
+Utilisation d'un utilisateur spécifique user_tp (non-root) pour des raisons de sécurité.
+
+Optimisation de l'ordre des layers : copie des fichiers Cargo.toml et compilation factice des dépendances en cache avant de copier le code source src/
+
+11/ Création de l'image et scan de sécurité pour vérifier les vulnérabilités :
+
+docker build -t api-rust-single -f Dockerfile.single .
+
+12/ Création d'une seconde image Docker ultra-optimisée en multi-stage (Dockerfile) :
+
+Stage 1 (Build) : Utilisation de l'image officielle Rust pour compiler le binaire.
+
+Stage 2 (Run) : Utilisation d'une image Debian minimaliste ne contenant que le binaire final. Le code source et les outils de compilation sont exclus de l'image finale.
+
+13/ Build et lancement du conteneur multi-stage en arrière-plan sur le port 8080 :
+
+
+docker build -t api-rust-multi .
+docker run -d -p 8080:8080 --name mon-api api-rust-multi
+14/ Tests de l'API depuis le conteneur Docker en cours d'exécution :
+
+Vérification de la route ping
+
+PS C:\www\WIK-DPS-TP01\WIK-DPS-TP02> Invoke-RestMethod -Uri "http://localhost:8080/ping"
+
+User-Agent                                                                                                Host
+
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari  localhost:8080
+
+Vérification des statistiques (le compteur s'incrémente bien via l'image Docker)
+
+PS C:\www\WIK-DPS-TP01\WIK-DPS-TP02> Invoke-RestMethod -Uri "http://localhost:8080/stats"
+
+instance_id             total_requests uptime_seconds
+
+instance-locale-default              4            157

@@ -1,0 +1,20 @@
+FROM rust:slim
+RUN useradd -ms /bin/bash user_tp
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo build --release && \
+    rm -rf src
+
+COPY src ./src
+RUN touch src/main.rs && cargo build --release
+
+RUN chown -R user_tp:user_tp /app
+USER user_tp
+
+EXPOSE 8080
+ENV PING_LISTEN_PORT=8080
+
+CMD ["./target/release/srv-web"]
