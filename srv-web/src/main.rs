@@ -5,15 +5,12 @@ use std::collections::HashMap;
 use std::time::Instant;
 use std::sync::{Arc, Mutex};
 
-// L'interface (Trait) demandée par la consigne
 trait CounterStore {
     fn increment(&self);
     fn get_count(&self) -> u32;
 }
 
-// L'implémentation concrète en mémoire
 struct MemoryCounterStore {
-    // Mutex permet de modifier le compteur en toute sécurité entre plusieurs threads
     count: Mutex<u32>,
 }
 
@@ -42,7 +39,6 @@ fn main() {
     let port = env::var("PING_LISTEN_PORT").unwrap_or_else(|_| "8080".to_string());
     let adresse = format!("0.0.0.0:{}", port);
 
-    // Initialisation de l'uptime et du stockage du compteur
     let start_time = Instant::now();
     let counter_store = Arc::new(MemoryCounterStore::new());
 
@@ -52,10 +48,8 @@ fn main() {
     for flux in ecouteur.incoming() {
         let flux = flux.unwrap();
         
-        // On clone les pointeurs Arc pour les passer à la fonction (légère copie de pointeur)
         let counter_clone = Arc::clone(&counter_store);
         
-        // On passe l'uptime et le compteur à notre gestionnaire
         gestion_connexion(flux, counter_clone, start_time);
     }
 }
@@ -73,9 +67,7 @@ fn gestion_connexion(mut flux: TcpStream, counter: Arc<MemoryCounterStore>, star
     
     if parties.len() >= 2 && parties[0] == "GET" {
         match parties[1] {
-            // --- ROUTE PING ---
             "/ping" => {
-                // Consigne : Le compteur s'incrémente à chaque requête /ping comprise
                 counter.increment();
 
                 let mut headers = HashMap::new();
@@ -90,13 +82,11 @@ fn gestion_connexion(mut flux: TcpStream, counter: Arc<MemoryCounterStore>, star
                 envoyer_reponse_json(flux, "200 OK", reponse_json);
             },
 
-            // --- ROUTE STATS (BONUS) ---
             "/stats" => {
                 let uptime = start_time.elapsed().as_secs();
                 let instance_id = env::var("INSTANCE_ID").unwrap_or_else(|_| "instance-locale-default".to_string());
                 let total_requests = counter.get_count();
 
-                // Construction de l'objet JSON pour les stats
                 let stats_json = serde_json::json!({
                     "total_requests": total_requests,
                     "uptime_seconds": uptime,
@@ -106,7 +96,6 @@ fn gestion_connexion(mut flux: TcpStream, counter: Arc<MemoryCounterStore>, star
                 envoyer_reponse_json(flux, "200 OK", stats_json);
             },
 
-            // --- TOUT LE RESTE -> 404 ---
             _ => {
                 let reponse_404 = "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
                 let _ = flux.write_all(reponse_404.as_bytes());
@@ -116,7 +105,6 @@ fn gestion_connexion(mut flux: TcpStream, counter: Arc<MemoryCounterStore>, star
     }
 }
 
-// Fonction utilitaire pour éviter la duplication de code pour l'envoi de JSON
 fn envoyer_reponse_json(mut flux: TcpStream, statut: &str, corps_json: String) {
     let reponse = format!(
         "HTTP/1.1 {}\r\n\
